@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/O-X-L/geoip-lookup-service/cnf"
+	"github.com/tracyhatemice/gogeoip-lookup/cnf"
 )
 
 func welcome() {

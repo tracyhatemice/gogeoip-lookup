@@ -1,4 +1,4 @@
-[![Lint](https://github.com/O-X-L/geoip-lookup-service/actions/workflows/lint.yml/badge.svg?branch=latest)](https://github.com/O-X-L/geoip-lookup-service/actions/workflows/lint.yml)
+[![Lint](https://github.com/tracyhatemice/gogeoip-lookup/actions/workflows/lint.yml/badge.svg?branch=latest)](https://github.com/tracyhatemice/gogeoip-lookup/actions/workflows/lint.yml)
 
 # GeoIP Lookup Service
 
@@ -8,7 +8,7 @@ It currently only supports databases in **MMDB format**.
 
 If you want to use their extended databases, you might encounter problems. You are welcome to help integrating them correctly.
 
-Feel free to [open a ticket](https://github.com/O-X-L/geoip-lookup-service/issues/new) if you encounter any issues.
+Feel free to [open a ticket](https://github.com/tracyhatemice/gogeoip-lookup/issues/new) if you encounter any issues.
 
 ----
 
@@ -115,7 +115,7 @@ Example systemd service:
 ```text
 [Unit]
 Description=GeoIP Lookup Service
-Documentation=https://github.com/O-X-L/geoip-lookup-service
+Documentation=https://github.com/tracyhatemice/gogeoip-lookup
 
 [Service]
 Type=simple

@@ -1,4 +1,4 @@
-module github.com/O-X-L/geoip-lookup-service
+module github.com/tracyhatemice/gogeoip-lookup
 
 go 1.21.1
 

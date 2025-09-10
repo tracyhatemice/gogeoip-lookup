@@ -1,16 +1,10 @@
-version: '3'
-
 services:
   geoip-lookup-service:
     build: .
-    image: geoip-lookup-service:latest
+    image: tracyhatemice/gogeoip-lookup:latest
     container_name: geoip-lookup-service
     hostname: geoip-lookup-service
     restart: unless-stopped
-    healthcheck:
-      test: sh -c "[ -f /var/lib/geoip-lookup/GeoLite2-ASN.mmdb ]"
-      timeout: 1s
-      retries: 20
     command:
       - /usr/local/bin/geoip-lookup-service
       - '-l'
@@ -56,4 +50,3 @@ networks:
 
 volumes:
   geoipupdate_data:
-    driver: local
