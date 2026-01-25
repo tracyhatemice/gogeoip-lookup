@@ -51,7 +51,7 @@ The `contrib/docker-maxmind/` directory contains a complete setup with automatic
    ```
 
 This will:
-- Start the GeoIP lookup service on port `10069`
+- Start the GeoIP lookup service on port `80`
 - Automatically download and update MaxMind GeoLite2 databases every 72 hours
 
 ### Container Configuration
@@ -59,7 +59,7 @@ This will:
 | Option | Description | Default |
 |--------|-------------|---------|
 | `-l` | Listen address (dual-stack) | `::` |
-| `-p` | Listen port | `10000` |
+| `-p` | Listen port | `80` |
 | `-t` | Database type (`ipinfo` or `maxmind`) | `ipinfo` |
 | `-country` | Path to country database | `/etc/geoip/country.mmdb` |
 | `-city` | Path to city database | `/etc/geoip/city.mmdb` |

@@ -7,8 +7,6 @@ services:
     restart: unless-stopped
     command:
       - /geoip-lookup
-      - '-p'
-      - '10069'
       - '-t'
       - 'maxmind'
       - '-country'
