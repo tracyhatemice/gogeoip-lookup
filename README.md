@@ -38,60 +38,83 @@ Make sure to read the GeoIP-DB License before integrating it with any service!
 
 ## Usage
 
-The binary starts a simple HTTP webserver.
+The binary starts an HTTP server with configurable timeouts.
 
-You can send a query and receive the result as response:
-
+### Command Line Options
 
 ```bash
-chmod +x geoip_lookup_service
-./geoip_lookup_service -l 127.0.0.1 -p 10069 -t ipinfo -country /etc/geoip/country.mmdb -asn /etc/geoip/asn.mmdb -city /etc/geoip/city.mmdb
-# -l = listen address (default=127.0.0.1)
-# -p = listen port (default=10000)
-# -plain = response in plain text format (default=false)
-# -t = database type (ipinfo/maxmind) (default=ipinfo)
-# -country = path to country-database (default=/etc/geoip/country.mmdb)
-# -city = path to city-database (default=/etc/geoip/city.mmdb)
-# -asn = path to asn-database (default=/etc/geoip/asn.mmdb)
+./geoip-lookup [options]
 
-curl "http://127.0.0.1:10069/?lookup=country&ip=1.1.1.1"
-> {"continent":"NA","continent_name":"North America","country":"US","country_name":"United States"}
+Options:
+  -l        Listen address (default: 127.0.0.1)
+  -p        Listen port (default: 10000)
+  -t        Database type: ipinfo or maxmind (default: ipinfo)
+  -country  Path to country database (default: /etc/geoip/country.mmdb)
+  -city     Path to city database (default: /etc/geoip/city.mmdb)
+  -asn      Path to ASN database (default: /etc/geoip/asn.mmdb)
+  -privacy  Path to privacy database (default: /etc/geoip/privacy.mmdb)
+  -plain    Return plain text instead of JSON (default: false)
+```
 
-curl "http://127.0.0.1:10069/?lookup=country&ip=1.1.1.1&filter=country"
+### API Endpoints
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /lookup/{type}` | Perform GeoIP lookup |
+| `GET /health` | Health check endpoint |
+
+**Lookup types:** `country`, `city`, `asn`, `privacy`, `country_asn` (IPInfo only)
+
+**Query parameters:**
+- `ip` - IP address to lookup (optional, defaults to client IP)
+- `filter` - Dot-separated path to extract specific fields
+
+### Examples
+
+```bash
+# Start the service
+./geoip-lookup -l 127.0.0.1 -p 10069 -t ipinfo \
+  -country /etc/geoip/country.mmdb \
+  -asn /etc/geoip/asn.mmdb \
+  -city /etc/geoip/city.mmdb
+
+# IPInfo examples
+curl "http://127.0.0.1:10069/lookup/country?ip=1.1.1.1"
+> {"Country":"US","CountryName":"United States","Continent":"NA","ContinentName":"North America",...}
+
+curl "http://127.0.0.1:10069/lookup/country?ip=1.1.1.1&filter=Country"
 > "US"
 
-curl "http://127.0.0.1:10069/?lookup=asn&ip=1.1.1.1"
-> {"asn":"AS13335","domain":"cloudflare.com","name":"Cloudflare, Inc."}
+curl "http://127.0.0.1:10069/lookup/asn?ip=1.1.1.1"
+> {"ASN":"AS13335","Name":"Cloudflare, Inc.","Domain":"cloudflare.com"}
 
-# use the 'plain' flag to get single attributes without JSON formatting
-./geoip_lookup_service -plain ...
-curl "http://127.0.0.1:10069/?lookup=country&ip=1.1.1.1&filter=country_name"
+# MaxMind examples
+./geoip-lookup -t maxmind ...
+
+curl "http://127.0.0.1:10069/lookup/asn?ip=1.1.1.1"
+> {"ASN":"13335","Name":"CLOUDFLARENET"}
+
+curl "http://127.0.0.1:10069/lookup/country?ip=8.8.8.8"
+> {"Country":{"Code":"US","ID":6252001,"EuropeanUnion":false},"Continent":{"Code":"NA",...},...}
+
+# Filter nested fields
+curl "http://127.0.0.1:10069/lookup/country?ip=8.8.8.8&filter=Country.Code"
+> "US"
+
+curl "http://127.0.0.1:10069/lookup/city?ip=8.8.8.8&filter=Location"
+> {"AccuracyRadius":1000,"Latitude":37.751,"Longitude":-97.822,"Timezone":"America/Chicago"}
+
+# Health check
+curl "http://127.0.0.1:10069/health"
+> {"status":"ok"}
+
+# Plain text output
+./geoip-lookup -plain ...
+curl "http://127.0.0.1:10069/lookup/country?ip=1.1.1.1&filter=CountryName"
 > United States
 
-# use other DB-type
-./geoip_lookup_service -t maxmind ...
-
-curl "http://127.0.0.1:10069/?ip=1.1.1.1&lookup=asn"
-> {"autonomous_system_number":13335,"autonomous_system_organization":"CLOUDFLARENET"}
-
-curl "http://127.0.0.1:10069/?ip=1.1.1.1&lookup=country"
-> {"registered_country":{"geoname_id":2077456,"iso_code":"AU","names":{"de":"Australien","en":"Australia","es":"Australia","fr":"Australie","ja":"オーストラリア","pt-BR":"Austrália","ru":"Австралия","zh-CN":"澳大利亚"}}}
-
-# filters can also be used to get deeper attributes
-curl "http://127.0.0.1:10069/?ip=8.8.8.8&lookup=country"
-> {"continent":{"code":"NA","geoname_id":6255149,"names":{"de":"Nordamerika","en":"North America","es":"Norteamérica","fr":"Amérique du Nord","ja":"北アメリカ","pt-BR":"América do Norte","ru":"Северная Америка","zh-CN":"北美洲"}},"country":{"geoname_id":6252001,"iso_code":"US","names":{"de":"Vereinigte Staaten","en":"United States","es":"Estados Unidos","fr":"États Unis","ja":"アメリカ","pt-BR":"EUA","ru":"США","zh-CN":"美国"}},"registered_country":{"geoname_id":6252001,"iso_code":"US","names":{"de":"Vereinigte Staaten","en":"United States","es":"Estados Unidos","fr":"États Unis","ja":"アメリカ","pt-BR":"EUA","ru":"США","zh-CN":"美国"}}}
-
-curl "http://127.0.0.1:10069/?ip=8.8.8.8&lookup=country&filter=country.iso_code"
-> "US"
-
-curl "http://127.0.0.1:10069/?ip=8.8.8.8&lookup=country&filter=country.names.en"
-> "United States"
-
-curl "http://127.0.0.1:10069/?ip=8.8.8.8&lookup=city&filter=location"
-> {"accuracy_radius":1000,"latitude":37.751,"longitude":-97.822,"time_zone":"America/Chicago"}
-
-# listen on all external IPs
-./geoip_lookup_service -l 0.0.0.0 -p 10069 ...
+# Listen on all interfaces
+./geoip-lookup -l 0.0.0.0 -p 10069 ...
 ```
 
 ----

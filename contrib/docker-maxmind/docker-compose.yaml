@@ -1,12 +1,12 @@
 services:
-  geoip-lookup-service:
+  geoip-lookup:
     build: .
     image: tracyhatemice/gogeoip-lookup:latest
-    container_name: geoip-lookup-service
-    hostname: geoip-lookup-service
+    container_name: geoip-lookup
+    hostname: geoip-lookup
     restart: unless-stopped
     command:
-      - /usr/local/bin/geoip-lookup-service
+      - /geoip-lookup
       - '-l'
       - '0.0.0.0'
       - '-p'

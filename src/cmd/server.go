@@ -4,137 +4,143 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/tracyhatemice/gogeoip-lookup/src/internal/cnf"
 	"github.com/tracyhatemice/gogeoip-lookup/src/internal/lookup"
 	"github.com/tracyhatemice/gogeoip-lookup/src/internal/util"
 )
 
-func errorResponse(w http.ResponseWriter, m string) {
-	w.WriteHeader(http.StatusBadRequest)
-	_, err := io.WriteString(w, fmt.Sprintf("%v\n", m))
-	if err != nil {
-		log.Fatal(err)
-	}
+// writeError writes an error response with the given status code and message.
+func writeError(w http.ResponseWriter, status int, msg string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(map[string]string{"error": msg})
 }
 
-func returnResult(w http.ResponseWriter, data any, logPrefix string) {
+// writeResult writes the result in the configured format (JSON or plain text).
+func writeResult(w http.ResponseWriter, data any) {
 	if cnf.ReturnPlain {
 		w.Header().Set("Content-Type", "text/plain")
-		_, err := io.WriteString(w, fmt.Sprintf("%+v\n", data))
-		if err != nil {
-			util.LogError(logPrefix, err)
-		}
+		fmt.Fprintf(w, "%+v\n", data)
 	} else {
 		w.Header().Set("Content-Type", "application/json")
-		err := json.NewEncoder(w).Encode(data)
-		if err != nil {
-			util.LogError(logPrefix, err)
-			errorResponse(w, "Failed to JSON-encode data")
-		}
+		json.NewEncoder(w).Encode(data)
 	}
 }
 
+// getClientIP extracts the client IP from the request, checking proxy headers.
 func getClientIP(r *http.Request) (string, error) {
-	fwdIPs := strings.Split(r.Header.Get("X-Forwarded-For"), ",")
-	if len(fwdIPs) > 0 {
-		netIP := net.ParseIP(fwdIPs[len(fwdIPs)-1])
-		if netIP != nil {
-			return netIP.String(), nil
+	// Check X-Forwarded-For header (rightmost IP is the client)
+	if xff := r.Header.Get("X-Forwarded-For"); xff != "" {
+		ips := strings.Split(xff, ",")
+		if ip := net.ParseIP(strings.TrimSpace(ips[len(ips)-1])); ip != nil {
+			return ip.String(), nil
 		}
 	}
 
-	realIP := r.Header.Get("X-Real-IP")
-	if realIP != "" {
-		netIP := net.ParseIP(realIP)
-		if netIP != nil {
-			return netIP.String(), nil
+	// Check X-Real-IP header
+	if realIP := r.Header.Get("X-Real-IP"); realIP != "" {
+		if ip := net.ParseIP(strings.TrimSpace(realIP)); ip != nil {
+			return ip.String(), nil
 		}
 	}
 
-	ip, _, err := net.SplitHostPort(r.RemoteAddr)
+	// Fall back to RemoteAddr
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
 	if err != nil {
 		return "", err
 	}
 
-	netIP := net.ParseIP(ip)
-	if netIP != nil {
-		ip := netIP.String()
-		if ip == "::1" {
+	if ip := net.ParseIP(host); ip != nil {
+		if ip.String() == "::1" {
 			return "127.0.0.1", nil
 		}
-		return ip, nil
+		return ip.String(), nil
 	}
 
 	return "", errors.New("IP not found")
 }
 
-func geoIpLookup(w http.ResponseWriter, r *http.Request) {
+// handleLookup handles GET /lookup/{type} requests.
+func handleLookup(w http.ResponseWriter, r *http.Request) {
+	lookupType := r.PathValue("type")
 	ipStr := r.URL.Query().Get("ip")
-	lookupStr := r.URL.Query().Get("lookup")
 	filterStr := r.URL.Query().Get("filter")
-	logPrefix := fmt.Sprintf("IP: '%v', Lookup: '%v', Filter: '%v'", ipStr, lookupStr, filterStr)
 
+	// Use client IP if not provided
 	if ipStr == "" {
-		clientIpStr, err := getClientIP(r)
-		if err == nil {
-			ipStr = clientIpStr
+		clientIP, err := getClientIP(r)
+		if err != nil {
+			writeError(w, http.StatusBadRequest, "Could not determine client IP")
+			return
 		}
-	}
-
-	if lookupStr == "" || ipStr == "" {
-		errorResponse(w, "Either 'lookup' or 'ip' were not provided")
-		return
+		ipStr = clientIP
 	}
 
 	ip := net.ParseIP(ipStr)
 	if ip == nil {
-		errorResponse(w, "Invalid IP provided")
+		writeError(w, http.StatusBadRequest, "Invalid IP address")
 		return
 	}
 
-	lookupFn := lookup.Funcs()[lookupStr]
+	lookupFn := lookup.Funcs()[lookupType]
 	if lookupFn == nil {
-		errorResponse(w, "Invalid LOOKUP provided")
+		writeError(w, http.StatusBadRequest, "Invalid lookup type")
 		return
 	}
+
 	data, err := lookupFn(ip)
 	if err != nil {
-		util.LogError(logPrefix, err)
-		errorResponse(w, "Failed to lookup data")
+		log.Printf("Lookup error: type=%s ip=%s error=%v", lookupType, ipStr, err)
+		writeError(w, http.StatusInternalServerError, "Lookup failed")
 		return
 	}
 
+	// Apply filter if specified
 	if filterStr != "" {
 		filteredData := data
-		for _, subFilterStr := range strings.Split(filterStr, ".") {
-			defer func() {
-				if err := recover(); err != nil {
-					util.LogError(logPrefix, err)
-					errorResponse(w, "Invalid FILTER provided")
-				}
-			}()
-			filteredData = util.GetMapValue(filteredData, subFilterStr)
+		for _, key := range strings.Split(filterStr, ".") {
+			filteredData = util.GetMapValue(filteredData, key)
 			if filteredData == nil {
-				errorResponse(w, "Invalid FILTER provided")
+				writeError(w, http.StatusBadRequest, "Invalid filter path")
 				return
 			}
 		}
-		returnResult(w, filteredData, logPrefix)
+		writeResult(w, filteredData)
 		return
 	}
 
-	returnResult(w, data, logPrefix)
+	writeResult(w, data)
+}
+
+// handleHealth handles GET /health for health checks.
+func handleHealth(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
 }
 
 func httpServer(listenAddr string, listenPort uint) {
-	http.HandleFunc("/", geoIpLookup)
-	var listenStr = fmt.Sprintf("%v:%v", listenAddr, listenPort)
+	mux := http.NewServeMux()
+
+	// Go 1.22+ pattern routing
+	mux.HandleFunc("GET /lookup/{type}", handleLookup)
+	mux.HandleFunc("GET /health", handleHealth)
+
+	listenStr := fmt.Sprintf("%s:%d", listenAddr, listenPort)
+
+	server := &http.Server{
+		Addr:         listenStr,
+		Handler:      mux,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
+		IdleTimeout:  120 * time.Second,
+	}
+
 	fmt.Println("Listening on http://" + listenStr)
-	log.Fatal(http.ListenAndServe(listenStr, nil))
+	log.Fatal(server.ListenAndServe())
 }

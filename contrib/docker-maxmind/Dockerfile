@@ -21,12 +21,12 @@ RUN set -eux; \
             "linux/arm/v6") GOARCH=arm GOARM=6  ;; \
             "linux/arm/v7") GOARCH=arm GOARM=7 ;; \
         esac; \
-        printf "Building geoip-lookup-service for arch ${GOARCH}\n"; \
-        CGO_ENABLED=0 GOARCH=${GOARCH} go build -a -ldflags="-s -w" -o /geoip-lookup-service github.com/tracyhatemice/gogeoip-lookup/src/cmd; \
-        upx --best --lzma /geoip-lookup-service
+        printf "Building geoip-lookup for arch ${GOARCH}\n"; \
+        CGO_ENABLED=0 GOARCH=${GOARCH} go build -a -ldflags="-s -w" -o /geoip-lookup github.com/tracyhatemice/gogeoip-lookup/src/cmd; \
+        upx --best --lzma /geoip-lookup
 
 FROM scratch
 
-COPY --from=builder /geoip-lookup-service /geoip-lookup-service
+COPY --from=builder /geoip-lookup /geoip-lookup
 
-ENTRYPOINT ["/geoip-lookup-service"]
+ENTRYPOINT ["/geoip-lookup"]
