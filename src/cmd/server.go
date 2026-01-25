@@ -19,7 +19,9 @@ import (
 func writeError(w http.ResponseWriter, status int, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	json.NewEncoder(w).Encode(map[string]string{"error": msg})
+	if err := json.NewEncoder(w).Encode(map[string]string{"error": msg}); err != nil {
+		log.Printf("Failed to write error response: %v", err)
+	}
 }
 
 // writeResult writes the result in the configured format (JSON or plain text).
@@ -29,7 +31,9 @@ func writeResult(w http.ResponseWriter, data any) {
 		fmt.Fprintf(w, "%+v\n", data)
 	} else {
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(data)
+		if err := json.NewEncoder(w).Encode(data); err != nil {
+			log.Printf("Failed to write response: %v", err)
+		}
 	}
 }
 
@@ -121,7 +125,9 @@ func handleLookup(w http.ResponseWriter, r *http.Request) {
 // handleHealth handles GET /health for health checks.
 func handleHealth(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+	if err := json.NewEncoder(w).Encode(map[string]string{"status": "ok"}); err != nil {
+		log.Printf("Failed to write health response: %v", err)
+	}
 }
 
 func httpServer(listenAddr string, listenPort uint) {
