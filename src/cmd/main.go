@@ -22,7 +22,7 @@ func main() {
 	var listenPort uint
 	var dbType string
 
-	flag.StringVar(&listenAddr, "l", "::", "Address to listen on (dual-stack)")
+	flag.StringVar(&listenAddr, "l", "[::]", "Address to listen on (dual-stack)")
 	flag.UintVar(&listenPort, "p", 10000, "Port to listen on")
 	flag.StringVar(&dbType, "t", "ipinfo", "Database type to use (ipinfo or maxmind)")
 	flag.StringVar(&cnf.DBCountry, "country", cnf.DBCountry, "Path to the country-database (optional)")
