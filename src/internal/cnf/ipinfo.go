@@ -38,19 +38,6 @@ type IPInfoASNExtended struct {
 	Country string `maxminddb:"country"`
 }
 
-// IPInfoCountryASN represents combined country and ASN data from IPInfo.
-type IPInfoCountryASN struct {
-	StartIP       net.IP `maxminddb:"start_ip"`
-	EndIP         net.IP `maxminddb:"end_ip"`
-	Country       string `maxminddb:"country"`
-	CountryName   string `maxminddb:"country_name"`
-	Continent     string `maxminddb:"continent"`
-	ContinentName string `maxminddb:"continent_name"`
-	ASN           string `maxminddb:"asn"`
-	ASName        string `maxminddb:"as_name"`
-	ASDomain      string `maxminddb:"as_domain"`
-}
-
 // IPInfoPrivacy represents privacy detection data from IPInfo.
 type IPInfoPrivacy struct {
 	StartIP net.IP `maxminddb:"start_ip"`

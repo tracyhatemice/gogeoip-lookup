@@ -21,11 +21,6 @@ func IPInfoASN(ip net.IP) (any, error) {
 	return lookupGeneric[cnf.IPInfoASN](ip, cnf.DBASN)
 }
 
-// IPInfoCountryASN looks up combined country and ASN information using IPInfo database.
-func IPInfoCountryASN(ip net.IP) (any, error) {
-	return lookupGeneric[cnf.IPInfoCountryASN](ip, cnf.DBCountry)
-}
-
 // IPInfoPrivacy looks up privacy detection information using IPInfo database.
 func IPInfoPrivacy(ip net.IP) (any, error) {
 	return lookupGeneric[cnf.IPInfoPrivacy](ip, cnf.DBPrivacy)

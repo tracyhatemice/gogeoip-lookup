@@ -15,18 +15,16 @@ type LookupFunc func(ip net.IP) (any, error)
 // FuncMapping maps database types to their lookup function implementations.
 var FuncMapping = map[cnf.DBType]map[string]LookupFunc{
 	cnf.DBTypeIPInfo: {
-		"country_asn": IPInfoCountryASN,
-		"country":     IPInfoCountry,
-		"city":        IPInfoCity,
-		"asn":         IPInfoASN,
-		"privacy":     IPInfoPrivacy,
+		"country": IPInfoCountry,
+		"city":    IPInfoCity,
+		"asn":     IPInfoASN,
+		"privacy": IPInfoPrivacy,
 	},
 	cnf.DBTypeMaxMind: {
-		"country_asn": nil,
-		"country":     MaxMindCountry,
-		"city":        MaxMindCity,
-		"asn":         MaxMindASN,
-		"privacy":     MaxMindPrivacy,
+		"country": MaxMindCountry,
+		"city":    MaxMindCity,
+		"asn":     MaxMindASN,
+		"privacy": MaxMindPrivacy,
 	},
 }
 

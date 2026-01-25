@@ -88,7 +88,7 @@ Make sure to read the GeoIP-DB License before integrating it with any service!
 | `GET /lookup/{type}` | Perform GeoIP lookup |
 | `GET /health` | Health check endpoint |
 
-**Lookup types:** `country`, `city`, `asn`, `privacy`, `country_asn` (IPInfo only)
+**Lookup types:** `country`, `city`, `asn`, `privacy`
 
 **Query parameters:**
 - `ip` - IP address to lookup (optional, defaults to client IP)
@@ -114,13 +114,6 @@ Make sure to read the GeoIP-DB License before integrating it with any service!
 | **asn** | `ASN` | string | `filter=ASN` |
 | | `Name` | string | `filter=Name` |
 | | `Domain` | string | `filter=Domain` |
-| **country_asn** | `Country` | string | `filter=Country` |
-| | `CountryName` | string | `filter=CountryName` |
-| | `Continent` | string | `filter=Continent` |
-| | `ContinentName` | string | `filter=ContinentName` |
-| | `ASN` | string | `filter=ASN` |
-| | `ASName` | string | `filter=ASName` |
-| | `ASDomain` | string | `filter=ASDomain` |
 | **privacy** | `Hosting` | bool | `filter=Hosting` |
 | | `Proxy` | bool | `filter=Proxy` |
 | | `Tor` | bool | `filter=Tor` |
