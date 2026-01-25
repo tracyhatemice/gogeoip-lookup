@@ -1,10 +1,16 @@
 ---
 
 run:
-  go: '1.21'
-  skip-dirs: []
-  skip-files: []
+  timeout: 2m
+
+linters:
+  enable:
+    - errcheck
+    - gosimple
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
 
 issues:
-  exclude: []
   exclude-rules: []

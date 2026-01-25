@@ -7,37 +7,36 @@ on:
     branches: [latest, v*]
     paths:
       - '**.go'
+      - 'go.mod'
+      - 'go.sum'
       - '.github/workflows/lint.yml'
+      - '.golangci.yml'
   pull_request:
     branches: [latest, v*]
     paths:
       - '**.go'
+      - 'go.mod'
+      - 'go.sum'
       - '.github/workflows/lint.yml'
+      - '.golangci.yml'
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 5
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Install python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-go@v5
         with:
-          python-version: '3.10'
+          go-version-file: 'go.mod'
 
-      - uses: actions/setup-go@v4
-        with:
-          go-version: '1.21'
-
-      - name: Build binary
-        run: |
-          cd main/
-          go build
-        shell: bash
+      - name: Build
+        run: go build ./src/cmd/
 
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
+        uses: golangci/golangci-lint-action@v6
         with:
-          args: '--config=.golangci.yml --out-format=colored-line-number'
+          version: latest
+          args: '--config=.golangci.yml'
