@@ -4,7 +4,7 @@ import (
 	"net"
 
 	"github.com/oschwald/maxminddb-golang"
-	"github.com/tracyhatemice/gogeoip-lookup/cnf"
+	"github.com/tracyhatemice/gogeoip-lookup/src/internal/cnf"
 )
 
 var FUNC_MAPPING = map[uint8]interface{}{

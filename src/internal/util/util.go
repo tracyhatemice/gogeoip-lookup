@@ -1,4 +1,4 @@
-package u
+package util
 
 import (
 	"log"

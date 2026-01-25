@@ -3,7 +3,7 @@ package lookup
 import (
 	"net"
 
-	"github.com/tracyhatemice/gogeoip-lookup/cnf"
+	"github.com/tracyhatemice/gogeoip-lookup/src/internal/cnf"
 )
 
 func IpInfoCountry(ip net.IP) (interface{}, error) {
