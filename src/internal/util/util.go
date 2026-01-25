@@ -5,18 +5,35 @@ import (
 	"reflect"
 )
 
-/*
-func GetAttribute(dataStructure interface{}, name string) reflect.Value {
-	return reflect.Indirect(
-		reflect.ValueOf(&dataStructure),
-	).Elem().FieldByName(name)
-}
-*/
+// GetMapValue retrieves a field value from a struct or map by name.
+func GetMapValue(data interface{}, name string) interface{} {
+	v := reflect.ValueOf(data)
 
-func GetMapValue(dataStructure interface{}, name string) interface{} {
-	return reflect.Indirect(
-		reflect.ValueOf(&dataStructure),
-	).Elem().Interface().(map[string]interface{})[name]
+	// Dereference pointer if necessary
+	for v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
+		if v.IsNil() {
+			return nil
+		}
+		v = v.Elem()
+	}
+
+	switch v.Kind() {
+	case reflect.Struct:
+		field := v.FieldByName(name)
+		if !field.IsValid() {
+			return nil
+		}
+		return field.Interface()
+	case reflect.Map:
+		key := reflect.ValueOf(name)
+		val := v.MapIndex(key)
+		if !val.IsValid() {
+			return nil
+		}
+		return val.Interface()
+	default:
+		return nil
+	}
 }
 
 func LogError(prefix string, err interface{}) {
