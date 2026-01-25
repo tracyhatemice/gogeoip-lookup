@@ -7,9 +7,10 @@ const DBTypeMaxMind DBType = 2
 
 // MaxMindCountryInfo contains nested types for country data.
 type MaxMindCountryInfo struct {
-	Code         string `maxminddb:"iso_code"`
-	ID           uint   `maxminddb:"geoname_id"`
-	EuropeanUnion bool   `maxminddb:"is_in_european_union"`
+	Code          string            `maxminddb:"iso_code"`
+	ID            uint              `maxminddb:"geoname_id"`
+	Names         map[string]string `maxminddb:"names"`
+	EuropeanUnion bool              `maxminddb:"is_in_european_union"`
 }
 
 // MaxMindContinentInfo contains continent data.
@@ -34,8 +35,8 @@ type MaxMindASN struct {
 
 // MaxMindCityInfo contains city-specific data.
 type MaxMindCityInfo struct {
-	Code string `maxminddb:"iso_code"`
-	ID   uint   `maxminddb:"geoname_id"`
+	ID    uint              `maxminddb:"geoname_id"`
+	Names map[string]string `maxminddb:"names"`
 }
 
 // MaxMindLocationInfo contains geographic location data.
