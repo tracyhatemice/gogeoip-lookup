@@ -29,7 +29,7 @@ type MaxMindCountry struct {
 
 // MaxMindASN represents ASN data from MaxMind.
 type MaxMindASN struct {
-	ASN  string `maxminddb:"autonomous_system_number"`
+	ASN  uint   `maxminddb:"autonomous_system_number"`
 	Name string `maxminddb:"autonomous_system_organization"`
 }
 
