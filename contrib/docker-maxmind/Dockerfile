@@ -30,3 +30,5 @@ FROM scratch
 COPY --from=builder /geoip-lookup /geoip-lookup
 
 ENTRYPOINT ["/geoip-lookup"]
+
+EXPOSE 80
