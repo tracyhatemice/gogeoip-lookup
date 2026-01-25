@@ -6,22 +6,27 @@ import (
 	"github.com/tracyhatemice/gogeoip-lookup/src/internal/cnf"
 )
 
-func IpInfoCountry(ip net.IP) (interface{}, error) {
-	return lookupBase(ip, cnf.IPINFO_COUNTRY, cnf.DB_COUNTRY)
+// IPInfoCountry looks up country information for an IP using IPInfo database.
+func IPInfoCountry(ip net.IP) (any, error) {
+	return lookupGeneric[cnf.IPInfoCountry](ip, cnf.DBCountry)
 }
 
-func IpInfoCity(ip net.IP) (interface{}, error) {
-	return lookupBase(ip, cnf.IPINFO_CITY, cnf.DB_CITY)
+// IPInfoCity looks up city information for an IP using IPInfo database.
+func IPInfoCity(ip net.IP) (any, error) {
+	return lookupGeneric[cnf.IPInfoCity](ip, cnf.DBCity)
 }
 
-func IpInfoAsn(ip net.IP) (interface{}, error) {
-	return lookupBase(ip, cnf.IPINFO_ASN, cnf.DB_ASN)
+// IPInfoASN looks up ASN information for an IP using IPInfo database.
+func IPInfoASN(ip net.IP) (any, error) {
+	return lookupGeneric[cnf.IPInfoASN](ip, cnf.DBASN)
 }
 
-func IpInfoCountryAsn(ip net.IP) (interface{}, error) {
-	return lookupBase(ip, cnf.IPINFO_COUNTRY_ASN, cnf.DB_COUNTRY)
+// IPInfoCountryASN looks up combined country and ASN information using IPInfo database.
+func IPInfoCountryASN(ip net.IP) (any, error) {
+	return lookupGeneric[cnf.IPInfoCountryASN](ip, cnf.DBCountry)
 }
 
-func IpInfoPrivacy(ip net.IP) (interface{}, error) {
-	return lookupBase(ip, cnf.IPINFO_PRIVACY, cnf.DB_PRIVACY)
+// IPInfoPrivacy looks up privacy detection information using IPInfo database.
+func IPInfoPrivacy(ip net.IP) (any, error) {
+	return lookupGeneric[cnf.IPInfoPrivacy](ip, cnf.DBPrivacy)
 }

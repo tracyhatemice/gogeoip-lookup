@@ -1,8 +1,7 @@
 module github.com/tracyhatemice/gogeoip-lookup
 
-go 1.21.1
+go 1.24.0
 
-require (
-	github.com/oschwald/maxminddb-golang v1.12.0 // indirect
-	golang.org/x/sys v0.10.0 // indirect
-)
+require github.com/oschwald/maxminddb-golang/v2 v2.0.0
+
+require golang.org/x/sys v0.37.0 // indirect

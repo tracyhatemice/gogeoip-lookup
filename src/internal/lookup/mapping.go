@@ -1,41 +1,65 @@
 package lookup
 
 import (
+	"fmt"
 	"net"
+	"net/netip"
 
-	"github.com/oschwald/maxminddb-golang"
+	"github.com/oschwald/maxminddb-golang/v2"
 	"github.com/tracyhatemice/gogeoip-lookup/src/internal/cnf"
 )
 
-var FUNC_MAPPING = map[uint8]interface{}{
-	cnf.DB_TYPE_IPINFO: map[string]interface{}{
-		"country_asn": IpInfoCountryAsn,
-		"country":     IpInfoCountry,
-		"city":        IpInfoCity,
-		"asn":         IpInfoAsn,
-		"privacy":     IpInfoPrivacy,
+// LookupFunc defines the signature for GeoIP lookup functions.
+type LookupFunc func(ip net.IP) (any, error)
+
+// FuncMapping maps database types to their lookup function implementations.
+var FuncMapping = map[cnf.DBType]map[string]LookupFunc{
+	cnf.DBTypeIPInfo: {
+		"country_asn": IPInfoCountryASN,
+		"country":     IPInfoCountry,
+		"city":        IPInfoCity,
+		"asn":         IPInfoASN,
+		"privacy":     IPInfoPrivacy,
 	},
-	cnf.DB_TYPE_MAXMIND: map[string]interface{}{
+	cnf.DBTypeMaxMind: {
 		"country_asn": nil,
 		"country":     MaxMindCountry,
 		"city":        MaxMindCity,
-		"asn":         MaxMindAsn,
+		"asn":         MaxMindASN,
 		"privacy":     MaxMindPrivacy,
 	},
 }
 
-var FUNC = FUNC_MAPPING[cnf.DB_TYPE].(map[string]interface{})
+// Funcs returns the lookup functions for the current database type.
+func Funcs() map[string]LookupFunc {
+	return FuncMapping[cnf.CurrentDBType]
+}
 
-func lookupBase(ip net.IP, dataStructure interface{}, dbFile string) (interface{}, error) {
+// toNetipAddr converts a net.IP to netip.Addr for the v2 API.
+func toNetipAddr(ip net.IP) (netip.Addr, error) {
+	addr, ok := netip.AddrFromSlice(ip)
+	if !ok {
+		return netip.Addr{}, fmt.Errorf("invalid IP address")
+	}
+	return addr, nil
+}
+
+func lookupGeneric[T any](ip net.IP, dbFile string) (*T, error) {
 	db, err := maxminddb.Open(dbFile)
 	if err != nil {
 		return nil, err
 	}
 	defer db.Close()
 
-	err = db.Lookup(ip, &dataStructure)
+	addr, err := toNetipAddr(ip)
 	if err != nil {
 		return nil, err
 	}
-	return dataStructure, nil
+
+	var result T
+	err = db.Lookup(addr).Decode(&result)
+	if err != nil {
+		return nil, err
+	}
+	return &result, nil
 }

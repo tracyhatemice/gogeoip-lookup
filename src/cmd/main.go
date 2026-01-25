@@ -26,17 +26,17 @@ func main() {
 	flag.StringVar(&listenAddr, "l", "127.0.0.1", "Address to listen on")
 	flag.UintVar(&listenPort, "p", 10000, "Port to listen on")
 	flag.StringVar(&dbType, "t", "ipinfo", "Database type to use (ipinfo or maxmind)")
-	flag.StringVar(&cnf.DB_COUNTRY, "country", cnf.DB_COUNTRY, "Path to the country-database (optional)")
-	flag.StringVar(&cnf.DB_CITY, "city", cnf.DB_CITY, "Path to the city-database (optional)")
-	flag.StringVar(&cnf.DB_ASN, "asn", cnf.DB_ASN, "Path to the asn-database (optional)")
-	flag.StringVar(&cnf.DB_PRIVACY, "privacy", cnf.DB_PRIVACY, "Path to the privacy-database (optional)")
-	flag.BoolVar(&cnf.RETURN_PLAIN, "plain", cnf.RETURN_PLAIN, "If the result should be returned in plain text format")
+	flag.StringVar(&cnf.DBCountry, "country", cnf.DBCountry, "Path to the country-database (optional)")
+	flag.StringVar(&cnf.DBCity, "city", cnf.DBCity, "Path to the city-database (optional)")
+	flag.StringVar(&cnf.DBASN, "asn", cnf.DBASN, "Path to the asn-database (optional)")
+	flag.StringVar(&cnf.DBPrivacy, "privacy", cnf.DBPrivacy, "Path to the privacy-database (optional)")
+	flag.BoolVar(&cnf.ReturnPlain, "plain", cnf.ReturnPlain, "If the result should be returned in plain text format")
 	flag.Parse()
 
 	if dbType == "maxmind" {
-		cnf.DB_TYPE = cnf.DB_TYPE_MAXMIND
+		cnf.CurrentDBType = cnf.DBTypeMaxMind
 	} else {
-		cnf.DB_TYPE = cnf.DB_TYPE_IPINFO
+		cnf.CurrentDBType = cnf.DBTypeIPInfo
 	}
 
 	welcome()

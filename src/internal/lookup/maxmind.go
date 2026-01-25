@@ -6,18 +6,22 @@ import (
 	"github.com/tracyhatemice/gogeoip-lookup/src/internal/cnf"
 )
 
-func MaxMindCountry(ip net.IP) (interface{}, error) {
-	return lookupBase(ip, cnf.MAXMIND_COUNTRY, cnf.DB_COUNTRY)
+// MaxMindCountry looks up country information for an IP using MaxMind database.
+func MaxMindCountry(ip net.IP) (any, error) {
+	return lookupGeneric[cnf.MaxMindCountry](ip, cnf.DBCountry)
 }
 
-func MaxMindCity(ip net.IP) (interface{}, error) {
-	return lookupBase(ip, cnf.MAXMIND_CITY, cnf.DB_CITY)
+// MaxMindCity looks up city information for an IP using MaxMind database.
+func MaxMindCity(ip net.IP) (any, error) {
+	return lookupGeneric[cnf.MaxMindCity](ip, cnf.DBCity)
 }
 
-func MaxMindAsn(ip net.IP) (interface{}, error) {
-	return lookupBase(ip, cnf.MAXMIND_ASN, cnf.DB_ASN)
+// MaxMindASN looks up ASN information for an IP using MaxMind database.
+func MaxMindASN(ip net.IP) (any, error) {
+	return lookupGeneric[cnf.MaxMindASN](ip, cnf.DBASN)
 }
 
-func MaxMindPrivacy(ip net.IP) (interface{}, error) {
-	return lookupBase(ip, cnf.MAXMIND_PRIVACY, cnf.DB_PRIVACY)
+// MaxMindPrivacy looks up privacy/anonymous IP information using MaxMind database.
+func MaxMindPrivacy(ip net.IP) (any, error) {
+	return lookupGeneric[cnf.MaxMindPrivacy](ip, cnf.DBPrivacy)
 }

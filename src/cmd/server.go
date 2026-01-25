@@ -23,8 +23,8 @@ func errorResponse(w http.ResponseWriter, m string) {
 	}
 }
 
-func returnResult(w http.ResponseWriter, data interface{}, logPrefix string) {
-	if cnf.RETURN_PLAIN {
+func returnResult(w http.ResponseWriter, data any, logPrefix string) {
+	if cnf.ReturnPlain {
 		w.Header().Set("Content-Type", "text/plain")
 		_, err := io.WriteString(w, fmt.Sprintf("%+v\n", data))
 		if err != nil {
@@ -98,11 +98,12 @@ func geoIpLookup(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data, err := lookup.FUNC[lookupStr].(func(net.IP) (interface{}, error))(ip)
-	if data == nil {
+	lookupFn := lookup.Funcs()[lookupStr]
+	if lookupFn == nil {
 		errorResponse(w, "Invalid LOOKUP provided")
 		return
 	}
+	data, err := lookupFn(ip)
 	if err != nil {
 		util.LogError(logPrefix, err)
 		errorResponse(w, "Failed to lookup data")
