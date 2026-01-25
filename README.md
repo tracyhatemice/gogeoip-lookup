@@ -26,6 +26,49 @@ These two providers were tested.
 
 ----
 
+## Quick Start with Docker
+
+### Using Pre-built Image
+
+```bash
+docker pull ghcr.io/tracyhatemice/gogeoip-lookup:latest
+```
+
+### Using Docker Compose (MaxMind)
+
+The `contrib/docker-maxmind/` directory contains a complete setup with automatic database updates.
+
+1. Create a `geoip.env` file with your MaxMind credentials:
+   ```bash
+   GEOIPUPDATE_ACCOUNT_ID=your_account_id
+   GEOIPUPDATE_LICENSE_KEY=your_license_key
+   ```
+
+2. Start the services:
+   ```bash
+   cd contrib/docker-maxmind
+   docker compose up -d
+   ```
+
+This will:
+- Start the GeoIP lookup service on port `10069`
+- Automatically download and update MaxMind GeoLite2 databases every 72 hours
+
+### Container Configuration
+
+| Option | Description | Default |
+|--------|-------------|---------|
+| `-l` | Listen address (dual-stack) | `::` |
+| `-p` | Listen port | `10000` |
+| `-t` | Database type (`ipinfo` or `maxmind`) | `ipinfo` |
+| `-country` | Path to country database | `/etc/geoip/country.mmdb` |
+| `-city` | Path to city database | `/etc/geoip/city.mmdb` |
+| `-asn` | Path to ASN database | `/etc/geoip/asn.mmdb` |
+| `-privacy` | Path to privacy database | `/etc/geoip/privacy.mmdb` |
+| `-plain` | Return plain text instead of JSON | `false` |
+
+----
+
 ## Integration
 
 * [HAProxy Community using Lua](https://github.com/O-X-L/haproxy-geoip)
@@ -36,27 +79,9 @@ Make sure to read the GeoIP-DB License before integrating it with any service!
 
 ----
 
-## Usage
+## API Reference
 
-The binary starts an HTTP server with configurable timeouts.
-
-### Command Line Options
-
-```bash
-./geoip-lookup [options]
-
-Options:
-  -l        Listen address (default: 127.0.0.1)
-  -p        Listen port (default: 10000)
-  -t        Database type: ipinfo or maxmind (default: ipinfo)
-  -country  Path to country database (default: /etc/geoip/country.mmdb)
-  -city     Path to city database (default: /etc/geoip/city.mmdb)
-  -asn      Path to ASN database (default: /etc/geoip/asn.mmdb)
-  -privacy  Path to privacy database (default: /etc/geoip/privacy.mmdb)
-  -plain    Return plain text instead of JSON (default: false)
-```
-
-### API Endpoints
+### Endpoints
 
 | Endpoint | Description |
 |----------|-------------|
@@ -69,96 +94,121 @@ Options:
 - `ip` - IP address to lookup (optional, defaults to client IP)
 - `filter` - Dot-separated path to extract specific fields
 
+### Response Fields & Filters
+
+#### IPInfo Database
+
+| Lookup | Field | Type | Filter Example |
+|--------|-------|------|----------------|
+| **country** | `Country` | string | `filter=Country` |
+| | `CountryName` | string | `filter=CountryName` |
+| | `Continent` | string | `filter=Continent` |
+| | `ContinentName` | string | `filter=ContinentName` |
+| **city** | `City` | string | `filter=City` |
+| | `Region` | string | `filter=Region` |
+| | `Country` | string | `filter=Country` |
+| | `Latitude` | float | `filter=Latitude` |
+| | `Longitude` | float | `filter=Longitude` |
+| | `PostalCode` | string | `filter=PostalCode` |
+| | `Timezone` | string | `filter=Timezone` |
+| **asn** | `ASN` | string | `filter=ASN` |
+| | `Name` | string | `filter=Name` |
+| | `Domain` | string | `filter=Domain` |
+| **country_asn** | `Country` | string | `filter=Country` |
+| | `CountryName` | string | `filter=CountryName` |
+| | `Continent` | string | `filter=Continent` |
+| | `ContinentName` | string | `filter=ContinentName` |
+| | `ASN` | string | `filter=ASN` |
+| | `ASName` | string | `filter=ASName` |
+| | `ASDomain` | string | `filter=ASDomain` |
+| **privacy** | `Hosting` | bool | `filter=Hosting` |
+| | `Proxy` | bool | `filter=Proxy` |
+| | `Tor` | bool | `filter=Tor` |
+| | `VPN` | bool | `filter=VPN` |
+| | `Relay` | bool | `filter=Relay` |
+| | `Service` | string | `filter=Service` |
+
+#### MaxMind Database
+
+| Lookup | Field | Type | Filter Example |
+|--------|-------|------|----------------|
+| **country** | `Country.Code` | string | `filter=Country.Code` |
+| | `Country.ID` | uint | `filter=Country.ID` |
+| | `Country.EuropeanUnion` | bool | `filter=Country.EuropeanUnion` |
+| | `RegisteredCountry.Code` | string | `filter=RegisteredCountry.Code` |
+| | `RegisteredCountry.ID` | uint | `filter=RegisteredCountry.ID` |
+| | `Continent.Code` | string | `filter=Continent.Code` |
+| | `Continent.ID` | uint | `filter=Continent.ID` |
+| | `Continent.Names` | map | `filter=Continent.Names` |
+| **city** | `City.Code` | string | `filter=City.Code` |
+| | `City.ID` | uint | `filter=City.ID` |
+| | `Country.Code` | string | `filter=Country.Code` |
+| | `Location.Latitude` | float | `filter=Location.Latitude` |
+| | `Location.Longitude` | float | `filter=Location.Longitude` |
+| | `Location.Timezone` | string | `filter=Location.Timezone` |
+| | `Location.AccuracyRadius` | uint | `filter=Location.AccuracyRadius` |
+| | `Postal.Code` | string | `filter=Postal.Code` |
+| | `Traits.IsAnycast` | bool | `filter=Traits.IsAnycast` |
+| | `Traits.IsAnonymousProxy` | bool | `filter=Traits.IsAnonymousProxy` |
+| **asn** | `ASN` | string | `filter=ASN` |
+| | `Name` | string | `filter=Name` |
+| **privacy** | `Any` | bool | `filter=Any` |
+| | `VPN` | bool | `filter=VPN` |
+| | `Tor` | bool | `filter=Tor` |
+| | `Hosting` | bool | `filter=Hosting` |
+| | `PublicProxy` | bool | `filter=PublicProxy` |
+| | `PrivateProxy` | bool | `filter=PrivateProxy` |
+
 ### Examples
 
 ```bash
-# Start the service
-./geoip-lookup -l 127.0.0.1 -p 10069 -t ipinfo \
-  -country /etc/geoip/country.mmdb \
-  -asn /etc/geoip/asn.mmdb \
-  -city /etc/geoip/city.mmdb
-
 # IPInfo examples
-curl "http://127.0.0.1:10069/lookup/country?ip=1.1.1.1"
+curl "http://localhost:10069/lookup/country?ip=1.1.1.1"
 > {"Country":"US","CountryName":"United States","Continent":"NA","ContinentName":"North America",...}
 
-curl "http://127.0.0.1:10069/lookup/country?ip=1.1.1.1&filter=Country"
+curl "http://localhost:10069/lookup/country?ip=1.1.1.1&filter=Country"
 > "US"
 
-curl "http://127.0.0.1:10069/lookup/asn?ip=1.1.1.1"
+curl "http://localhost:10069/lookup/asn?ip=1.1.1.1"
 > {"ASN":"AS13335","Name":"Cloudflare, Inc.","Domain":"cloudflare.com"}
 
 # MaxMind examples
-./geoip-lookup -t maxmind ...
-
-curl "http://127.0.0.1:10069/lookup/asn?ip=1.1.1.1"
+curl "http://localhost:10069/lookup/asn?ip=1.1.1.1"
 > {"ASN":"13335","Name":"CLOUDFLARENET"}
 
-curl "http://127.0.0.1:10069/lookup/country?ip=8.8.8.8"
+curl "http://localhost:10069/lookup/country?ip=8.8.8.8"
 > {"Country":{"Code":"US","ID":6252001,"EuropeanUnion":false},"Continent":{"Code":"NA",...},...}
 
 # Filter nested fields
-curl "http://127.0.0.1:10069/lookup/country?ip=8.8.8.8&filter=Country.Code"
+curl "http://localhost:10069/lookup/country?ip=8.8.8.8&filter=Country.Code"
 > "US"
 
-curl "http://127.0.0.1:10069/lookup/city?ip=8.8.8.8&filter=Location"
+curl "http://localhost:10069/lookup/city?ip=8.8.8.8&filter=Location"
 > {"AccuracyRadius":1000,"Latitude":37.751,"Longitude":-97.822,"Timezone":"America/Chicago"}
 
 # Health check
-curl "http://127.0.0.1:10069/health"
+curl "http://localhost:10069/health"
 > {"status":"ok"}
-
-# Plain text output
-./geoip-lookup -plain ...
-curl "http://127.0.0.1:10069/lookup/country?ip=1.1.1.1&filter=CountryName"
-> United States
-
-# Listen on all interfaces
-./geoip-lookup -l 0.0.0.0 -p 10069 ...
 ```
 
 ----
 
-## Testing
+## Development
 
-Basic integration tests are done by using the test-script:
+### Building
+
+```bash
+go build -o geoip-lookup ./src/cmd
+```
+
+### Testing
 
 ```bash
 bash scripts/test.sh
 ```
 
-Feel free to contribute more test-cases if you found some edge-case issue(s).
-
 ----
 
-## Service
-
-Example systemd service:
-
-```text
-[Unit]
-Description=GeoIP Lookup Service
-Documentation=https://github.com/tracyhatemice/gogeoip-lookup
-
-[Service]
-Type=simple
-ExecStart=/usr/bin/geoip-lookup -l 127.0.0.1 -p 10069 -t ipinfo -country /etc/geoip/country.mmdb -asn /etc/geoip/asn.mmdb -city /etc/geoip/city.mmdb
-
-# service-user only needs read-access to databases
-User=geoip
-Group=geoip
-Restart=on-failure
-RestartSec=5s
-
-StandardOutput=journal
-StandardError=journal
-SyslogIdentifier=geoip-lookup
-
-[Install]
-WantedBy=multi-user.target
-```
-
-----
 ## Thanks
 
 O-X-L/geoip-lookup-service

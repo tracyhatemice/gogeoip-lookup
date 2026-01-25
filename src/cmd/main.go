@@ -15,7 +15,6 @@ func welcome() {
 	fmt.Println("\\____/\\___/\\____/___/_/      /_____/\\____/\\____/_/|_|\\__,_/ .___/ ")
 	fmt.Println("                                                         /_/      ")
 	fmt.Printf("Version: %v\n", cnf.VERSION)
-	fmt.Printf("by OXL IT Services (License: MIT)\n\n")
 }
 
 func main() {
@@ -23,7 +22,7 @@ func main() {
 	var listenPort uint
 	var dbType string
 
-	flag.StringVar(&listenAddr, "l", "127.0.0.1", "Address to listen on")
+	flag.StringVar(&listenAddr, "l", "::", "Address to listen on (dual-stack)")
 	flag.UintVar(&listenPort, "p", 10000, "Port to listen on")
 	flag.StringVar(&dbType, "t", "ipinfo", "Database type to use (ipinfo or maxmind)")
 	flag.StringVar(&cnf.DBCountry, "country", cnf.DBCountry, "Path to the country-database (optional)")
