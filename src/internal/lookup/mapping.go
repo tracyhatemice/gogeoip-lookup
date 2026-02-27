@@ -1,7 +1,7 @@
 package lookup
 
 import (
-	"fmt"
+	"errors"
 	"net"
 	"net/netip"
 
@@ -37,7 +37,7 @@ func Funcs() map[string]LookupFunc {
 func toNetipAddr(ip net.IP) (netip.Addr, error) {
 	addr, ok := netip.AddrFromSlice(ip)
 	if !ok {
-		return netip.Addr{}, fmt.Errorf("invalid IP address")
+		return netip.Addr{}, errors.New("invalid IP address")
 	}
 	return addr, nil
 }

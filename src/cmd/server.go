@@ -108,7 +108,7 @@ func handleLookup(w http.ResponseWriter, r *http.Request) {
 	// Apply filter if specified
 	if filterStr != "" {
 		filteredData := data
-		for _, key := range strings.Split(filterStr, ".") {
+		for key := range strings.SplitSeq(filterStr, ".") {
 			filteredData = util.GetMapValue(filteredData, key)
 			if filteredData == nil {
 				writeError(w, http.StatusBadRequest, "Invalid filter path")

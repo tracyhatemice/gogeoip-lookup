@@ -6,11 +6,11 @@ import (
 )
 
 // GetMapValue retrieves a field value from a struct or map by name.
-func GetMapValue(data interface{}, name string) interface{} {
+func GetMapValue(data any, name string) any {
 	v := reflect.ValueOf(data)
 
 	// Dereference pointer if necessary
-	for v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
+	for v.Kind() == reflect.Pointer || v.Kind() == reflect.Interface {
 		if v.IsNil() {
 			return nil
 		}
@@ -36,6 +36,6 @@ func GetMapValue(data interface{}, name string) interface{} {
 	}
 }
 
-func LogError(prefix string, err interface{}) {
+func LogError(prefix string, err any) {
 	log.Fatalf("%v, Error: %v", prefix, err)
 }
